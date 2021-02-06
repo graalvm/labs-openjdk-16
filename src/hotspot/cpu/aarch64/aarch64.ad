@@ -1,6 +1,6 @@
 //
-// Copyright (c) 2003, 2020, Oracle and/or its affiliates. All rights reserved.
-// Copyright (c) 2014, 2020, Red Hat, Inc. All rights reserved.
+// Copyright (c) 2003, 2021, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2021, Red Hat, Inc. All rights reserved.
 // DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 //
 // This code is free software; you can redistribute it and/or modify it
@@ -1911,7 +1911,7 @@ void MachPrologNode::emit(CodeBuffer &cbuf, PhaseRegAlloc *ra_) const {
     __ bind(L_skip_barrier);
   }
 
-  if (UseSVE > 0 && C->max_vector_size() >= 16) {
+  if (C->max_vector_size() >= 16) {
     __ reinitialize_ptrue();
   }
 
@@ -3793,11 +3793,9 @@ encode %{
       }
     }
 
-    if (UseSVE > 0 && Compile::current()->max_vector_size() >= 16) {
-      // Only non uncommon_trap calls need to reinitialize ptrue.
-      if (uncommon_trap_request() == 0) {
-        __ reinitialize_ptrue();
-      }
+    // Only non uncommon_trap calls need to reinitialize ptrue.
+    if (Compile::current()->max_vector_size() >= 16 && uncommon_trap_request() == 0) {
+      __ reinitialize_ptrue();
     }
   %}
 
@@ -3808,7 +3806,7 @@ encode %{
     if (call == NULL) {
       ciEnv::current()->record_failure("CodeCache is full");
       return;
-    } else if (UseSVE > 0 && Compile::current()->max_vector_size() >= 16) {
+    } else if (Compile::current()->max_vector_size() >= 16) {
       __ reinitialize_ptrue();
     }
   %}
@@ -3846,7 +3844,7 @@ encode %{
       __ bind(retaddr);
       __ add(sp, sp, 2 * wordSize);
     }
-    if (UseSVE > 0 && Compile::current()->max_vector_size() >= 16) {
+    if (Compile::current()->max_vector_size() >= 16) {
       __ reinitialize_ptrue();
     }
   %}
@@ -3859,7 +3857,7 @@ encode %{
   enc_class aarch64_enc_ret() %{
     C2_MacroAssembler _masm(&cbuf);
 #ifdef ASSERT
-    if (UseSVE > 0 && Compile::current()->max_vector_size() >= 16) {
+    if (Compile::current()->max_vector_size() >= 16) {
       __ verify_ptrue();
     }
 #endif
@@ -18857,11 +18855,7 @@ instruct vsrla8B_imm(vecD dst, vecD src, immI shift) %{
   format %{ "usra    $dst, $src, $shift\t# vector (8B)" %}
   ins_encode %{
     int sh = (int)$shift$$constant;
-    if (sh >= 8) {
-      __ eor(as_FloatRegister($src$$reg), __ T8B,
-             as_FloatRegister($src$$reg),
-             as_FloatRegister($src$$reg));
-    } else {
+    if (sh < 8) {
       __ usra(as_FloatRegister($dst$$reg), __ T8B,
              as_FloatRegister($src$$reg), sh);
     }
@@ -18876,11 +18870,7 @@ instruct vsrla16B_imm(vecX dst, vecX src, immI shift) %{
   format %{ "usra    $dst, $src, $shift\t# vector (16B)" %}
   ins_encode %{
     int sh = (int)$shift$$constant;
-    if (sh >= 8) {
-      __ eor(as_FloatRegister($src$$reg), __ T16B,
-             as_FloatRegister($src$$reg),
-             as_FloatRegister($src$$reg));
-    } else {
+    if (sh < 8) {
       __ usra(as_FloatRegister($dst$$reg), __ T16B,
              as_FloatRegister($src$$reg), sh);
     }
@@ -18895,12 +18885,8 @@ instruct vsrla4S_imm(vecD dst, vecD src, immI shift) %{
   format %{ "usra    $dst, $src, $shift\t# vector (4H)" %}
   ins_encode %{
     int sh = (int)$shift$$constant;
-    if (sh >= 16) {
-      __ eor(as_FloatRegister($src$$reg), __ T8B,
-             as_FloatRegister($src$$reg),
-             as_FloatRegister($src$$reg));
-    } else {
-      __ ushr(as_FloatRegister($dst$$reg), __ T4H,
+    if (sh < 16) {
+      __ usra(as_FloatRegister($dst$$reg), __ T4H,
              as_FloatRegister($src$$reg), sh);
     }
   %}
@@ -18914,11 +18900,7 @@ instruct vsrla8S_imm(vecX dst, vecX src, immI shift) %{
   format %{ "usra    $dst, $src, $shift\t# vector (8H)" %}
   ins_encode %{
     int sh = (int)$shift$$constant;
-    if (sh >= 16) {
-      __ eor(as_FloatRegister($src$$reg), __ T16B,
-             as_FloatRegister($src$$reg),
-             as_FloatRegister($src$$reg));
-    } else {
+    if (sh < 16) {
       __ usra(as_FloatRegister($dst$$reg), __ T8H,
              as_FloatRegister($src$$reg), sh);
     }
