@@ -90,7 +90,9 @@ local labsjdk_builder_version = "fd83a50451047b1214b167dd8a1b3569c57787cb";
             MACOSX_DEPLOYMENT_TARGET: "10.11"
         },
         name+: "-darwin",
-        capabilities+: ["darwin_mojave"] # JIB only works on the darwin_mojave slaves
+        # JIB only works on the darwin_mojave slaves and JDK 16 switched
+        # to Xcode 11.3.1 which requires 10.14.4 at minimum (GR-28903)
+        capabilities+: ["darwin_mojave_6"]
     },
 
     AMD64:: {
@@ -200,7 +202,7 @@ local labsjdk_builder_version = "fd83a50451047b1214b167dd8a1b3569c57787cb";
                 "--java-home-link-target=${%s}" % java_home_env_var,
                 "${JDK_SRC_DIR}"
             ],
-            [conf.exe("${%s}/bin/java" % java_home_env_var), "-version"]
+            (if !is_musl_build then [conf.exe("${%s}/bin/java" % java_home_env_var), "-version"] else ["echo"])
         ],
 
         run+: (if !is_musl_build then [
