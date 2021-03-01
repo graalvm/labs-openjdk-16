@@ -75,7 +75,7 @@ public class MemoryAccessProviderTest {
             PROVIDER.readPrimitiveConstant(kind, base, offset, kind.getByteCount() * 8);
             Assert.assertFalse(isOutOfBounds);
         } catch (IllegalArgumentException iae) {
-            Assert.assertTrue(isOutOfBounds);
+            Assert.assertTrue(isOutOfBounds, iae.getMessage());
         }
     }
 
@@ -85,7 +85,7 @@ public class MemoryAccessProviderTest {
             PROVIDER.readPrimitiveConstant(kind, base, offset, kind.getByteCount() * 8);
             Assert.assertFalse(isOutOfBounds);
         } catch (IllegalArgumentException iae) {
-            Assert.assertTrue(isOutOfBounds);
+            Assert.assertTrue(isOutOfBounds, iae.getMessage());
         }
     }
 
