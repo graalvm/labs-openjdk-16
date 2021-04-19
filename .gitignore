@@ -16,6 +16,7 @@ NashornProfile.txt
 /src/utils/LogCompilation/target/
 **/JTreport/**
 **/JTwork/**
++/mxbuild/
 **/.checkstyle
 **/.classpath
 **/.externalToolBuilders
