@@ -31,7 +31,7 @@ suite = {
                 ],
             },
             "javaCompliance" : "16+",
-            "checkstyleVersion" : "8.8",
+            "checkstyleVersion" : "8.36.1",
             "workingSets" : "API,JVMCI",
         },
 
