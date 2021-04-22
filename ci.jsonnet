@@ -257,7 +257,10 @@ local labsjdk_builder_version = "66c43e01a537017021f186f9063796e2f82cd2aa";
     local clone_graal = {
         run+: [
             ["git", "clone", ["mx", "urlrewrite", "https://github.com/graalvm/graal.git"]],
-            ["git", "-C", "graal", "checkout", downstream_branch, "||", "true"],
+            # Use branch recorded by previous builder or record it now for subsequent builder(s)
+            ["test", "-f", "graal.commit", "||", "echo", downstream_branch, ">graal.commit"],
+            ["git", "-C", "graal", "checkout", ["cat", "graal.commit"], "||", "true"],
+            ["git", "-C", "graal", "rev-list", "-n", "1", "HEAD", ">graal.commit"],            
         ]
     },
 
@@ -314,6 +317,11 @@ local labsjdk_builder_version = "66c43e01a537017021f186f9063796e2f82cd2aa";
         targets: ["gate"],
         publishArtifacts: [
             {
+                name: "libgraal" + conf.name + ".graal.commit",
+                dir: ".",
+                patterns: ["graal.commit"]
+            },
+            {
                 name: "libgraal" + conf.name,
                 dir: ".",
                 patterns: ["graal/*/mxbuild"]
@@ -328,6 +336,11 @@ local labsjdk_builder_version = "66c43e01a537017021f186f9063796e2f82cd2aa";
 
     local requireLibGraal(conf) = {
         requireArtifacts+: [
+            {
+                name: "libgraal" + conf.name + ".graal.commit",
+                dir: ".",
+                autoExtract: true
+            },
             {
                 name: "libgraal" + conf.name,
                 dir: ".",
