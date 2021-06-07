@@ -48,11 +48,6 @@ local labsjdk_builder_version = "66c43e01a537017021f186f9063796e2f82cd2aa";
         name+: "-linux",
         os:: "linux",
     },
-    LinuxDockerAArch64:: self.Linux {
-        docker: {
-            image: defs.linux_docker_image_aarch64
-        },
-    },
     LinuxDockerAMD64Musl:: self.Linux {
         docker: {
             image: defs.linux_docker_image_amd64_musl
@@ -385,7 +380,7 @@ local labsjdk_builder_version = "66c43e01a537017021f186f9063796e2f82cd2aa";
         self.Darwin + self.AMD64,
 
         # Cannot use devkit (GR-26071)
-        self.LinuxDockerAArch64 + self.AArch64,
+        self.Linux + self.AArch64,
     ],
 
     local amd64_musl_confs = [
